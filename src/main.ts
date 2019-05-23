@@ -1,5 +1,5 @@
 import Component from './components/common/Component';
-import { Form, Input, Textinput, Textarea, Dropdown, Checkbox, Radio } from './components/common/Inputs';
+import CreateInput from './components/CreateInput';
 
 class Main extends Component {
 
@@ -9,24 +9,8 @@ class Main extends Component {
     }
 
     async init() {
-        let input: Input;
-
         this.ele.innerHTML = this.template();
-
-        this.childComponents.push(new Form(this.ele.querySelector('#form'), [
-            new Textinput(null, 'text_input'),
-            new Textarea(null, 'text_area'),
-            new Dropdown(null, 'dropdown', [
-                { value: 1, text: 'One' },
-                { value: 2, text: 'Two' }
-            ]),
-            new Checkbox(null, 'checkbox', 'Is this a test'),
-            new Radio(null, 'radio_test', [
-                { value: 1, text: 'One' },
-                { value: 2, text: 'Two' }
-            ])
-        ]));
-
+        this.childComponents.push(new CreateInput(this.ele.querySelector('#form')));
         return super.init();
     }
 

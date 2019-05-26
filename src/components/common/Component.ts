@@ -3,9 +3,11 @@ export default class Component {
     readonly state: any = {};
     ele: Element;
     readonly childComponents: Array<Component> = [];
+    readonly config: ComponentConfig;
 
-    constructor(ele: Element) {
+    constructor(ele: Element, config?: ComponentConfig) {
         this.ele = ele;
+        this.config = config;
     }
     setState(state: any) {
         Object.assign(this.state, state);
@@ -22,3 +24,10 @@ export default class Component {
         return ``;
     }
 }
+
+interface ComponentConfig {
+    classes?: string[];
+    attributes?: Map<string, string>;
+}
+
+export { Component, ComponentConfig }

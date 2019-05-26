@@ -1,4 +1,4 @@
-import Component from './Component';
+import { Component, ComponentConfig } from './Component';
 
 abstract class Input extends Component {
 
@@ -6,8 +6,8 @@ abstract class Input extends Component {
     protected value: string | number | boolean;
     private onChangeCallback: (value: string | number | boolean) => any;
 
-    constructor(ele: Element, name: string) {
-        super(ele);
+    constructor(ele: Element, name: string, config?: InputConfig) {
+        super(ele, config);
         this.name = name;
     }
 
@@ -35,6 +35,11 @@ abstract class Input extends Component {
     }
 }
 
+interface InputConfig extends ComponentConfig {
+    placeholder?: string;
+    label: string;
+}
+
 interface Option<T extends number | string, U extends number | string> {
     value: T;
     text: U;
@@ -42,12 +47,9 @@ interface Option<T extends number | string, U extends number | string> {
 
 class Form extends Component {
 
-    private config: any = {};
-
-    constructor(ele: Element, inputs: Input[], config?: any) {
-        super(ele);
+    constructor(ele: Element, inputs: Input[], config?: FormConfig) {
+        super(ele, config);
         this.childComponents.push(...inputs);
-        if (config) this.config = config;
     }
 
     async init() {
@@ -79,39 +81,39 @@ class Form extends Component {
     }
 
     private inputsTemplate() {
-        let template = this.config.inline ?
-            (_v: any, i: number) => { return `<p id='input_${i}' class='control'></p>`; } :
-            (_v: any, i: number) => {
-                return `<div class='field'>
+        let config = this.config as FormConfig,
+            template = this.config && config.inline ?
+                (_v: any, i: number) => { return `<p id='input_${i}' class='control'></p>`; } :
+                (_v: any, i: number) => {
+                    return `<div class='field'>
                             <p id='input_${i}' class='control'></p>
                         </div>`;
-            }
+                }
         return this.childComponents.map(template).join('');
     }
 
     template() {
+        let config = this.config as FormConfig;
         return `<form class='box'>
-                    ${this.config.inline ? '' : this.inputsTemplate()}
+                    ${this.config && config.inline ? '' : this.inputsTemplate()}
                     <span class='field is-grouped'>
-                        ${this.config.inline ? this.inputsTemplate() : ''}
+                        ${this.config && config.inline ? this.inputsTemplate() : ''}
                         <p class='control'><a id='submit' class='button is-primary'>Submit</a></p>
                         <p class='control'><a id='cancel' class='button is-light'>Cancel</a></p>
                     </span>
                 </form>`;
     }
 }
-//TODO: improve config for inputs
+
+interface FormConfig extends ComponentConfig {
+    inline: boolean;
+}
+
 class Textinput extends Input {
 
-    private type: string = 'text';
-    private placeholder: string = 'Input';
 
-    constructor(ele: Element, name: string, config?: any) {
-        super(ele, name);
-        if (config) {
-            if (config.type) this.type = config.type;
-            if (config.placeholder) this.placeholder = config.placeholder;
-        }
+    constructor(ele: Element, name: string, config?: TextinputConfig) {
+        super(ele, name, config);
     }
 
     async init() {
@@ -121,20 +123,20 @@ class Textinput extends Input {
     }
 
     template() {
-        return `<input class='input' type='${this.type}' placeholder='${this.placeholder}' ${this.templateProps()}>`;
+        let config = this.config as InputConfig
+        return `<label>${config.label ? config.label : name}
+                    <input class='input' type='${config.type ? config.type : 'text'}' 
+                        placeholder='${config.placeholder ? config.placeholder : 'input'}' ${this.templateProps()}>
+                </label>`;
     }
 }
-
+interface TextinputConfig extends InputConfig {
+    type?: string;
+}
 class Textarea extends Input {
 
-    private placeholder: string = 'Input';
-    private rows: number;
-    constructor(ele: Element, name: string, config?: any) {
-        super(ele, name);
-        if (config) {
-            if (config.placeholder) this.placeholder = config.placeholder;
-            if (config.rows) this.rows = config.rows;
-        }
+    constructor(ele: Element, name: string, config?: TextareaConfig) {
+        super(ele, name, config);
     }
 
     async init() {
@@ -144,17 +146,25 @@ class Textarea extends Input {
     }
 
     template() {
-        return `<textarea class='textarea' placeholder='${this.state.placeholder}'
-        ${this.rows ? ` rows='${this.rows}'` : ''} ${this.templateProps()}></textarea>`;
+        let config = this.config as TextareaConfig;
+        return `<label>${config.label ? config.label : this.name}
+                    <textarea class='textarea' placeholder='${config.placeholder ? config.placeholder : 'Input'}'
+                    ${config.rows ? ` rows='${config.rows}'` : ''} ${this.templateProps()}></textarea>
+                </label>`;
     }
 }
+
+interface TextareaConfig extends InputConfig {
+    rows?: number;
+}
+
 
 class Dropdown<T extends number | string, U extends number | string> extends Input {
 
     private options: Option<T, U>[];
 
-    constructor(ele: Element, name: string, options: Option<T, U>[]) {
-        super(ele, name);
+    constructor(ele: Element, name: string, options: Option<T, U>[], config?: InputConfig) {
+        super(ele, name, config);
         this.options = options;
     }
 
@@ -171,19 +181,18 @@ class Dropdown<T extends number | string, U extends number | string> extends Inp
     }
 
     template() {
-        return `<span class='select'>
-                    <select ${this.templateProps()}>${this.optionsTemplate()}</select>
-                </span>`;
+        let config = this.config as InputConfig
+        return `<label>${config.label ? config.label : this.name}
+                    <span class='select'><select ${this.templateProps()}>${this.optionsTemplate()}</select></span>
+                </label>`;
     }
 }
 
 class Checkbox extends Input {
 
-    private label: string;
-
-    constructor(ele: Element, name: string, label: string) {
-        super(ele, name);
-        this.label = label;
+    constructor(ele: Element, name: string, config?: InputConfig) {
+        super(ele, name, config);
+        if (config.label) this.label = config.label;
     }
 
     async init() {
@@ -197,7 +206,8 @@ class Checkbox extends Input {
     }
 
     template() {
-        return `<label class='checkbox'><input type='checkbox' ${this.templateProps()}>${this.label}</label>`
+        let config = this.config as InputConfig;
+        return `<label class='checkbox'>${config.label ? config.label : this.name}<input type='checkbox' ${this.templateProps()}></label>`
     }
 }
 
@@ -205,8 +215,8 @@ class Radio<T extends number | string, U extends number | string> extends Input 
 
     private options: Option<T, U>[];
 
-    constructor(ele: Element, name: string, options: Option<T, U>[]) {
-        super(ele, name);
+    constructor(ele: Element, name: string, options: Option<T, U>[], config?: InputConfig) {
+        super(ele, name, config);
         this.options = options;
     }
 
@@ -217,8 +227,11 @@ class Radio<T extends number | string, U extends number | string> extends Input 
     }
 
     private radioTemplate() {
+        let config = this.config as InputConfig
         return this.options.map(o => {
-            return ` <label class='radio'><input type='radio' value='${o.value}' name='${this.name}'>${o.text}</label>`
+            return `<label class='radio'>${config.label ? config.label : this.name}
+                        <input type='radio' value='${o.value}' name='${this.name}'>${o.text}
+                    </label>`
         }).join('');
     }
 
@@ -236,4 +249,7 @@ class Radio<T extends number | string, U extends number | string> extends Input 
     }
 }
 
-export { Input, Option, Form, Textinput, Textarea, Dropdown, Checkbox, Radio };
+export {
+    Input, Option, Form, Textinput, Textarea, Dropdown, Checkbox, Radio,
+    FormConfig, InputConfig, TextareaConfig, TextinputConfig
+};

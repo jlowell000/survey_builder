@@ -36,8 +36,8 @@ abstract class Input extends Component {
 }
 
 interface InputConfig extends ComponentConfig {
-    placeholder?: string;
     label: string;
+    placeholder?: string;
 }
 
 interface Option<T extends number | string, U extends number | string> {
@@ -94,12 +94,12 @@ class Form extends Component {
 
     template() {
         let config = this.config as FormConfig;
-        return `<form class='box'>
+        return `<form>
                     ${this.config && config.inline ? '' : this.inputsTemplate()}
                     <span class='field is-grouped'>
                         ${this.config && config.inline ? this.inputsTemplate() : ''}
-                        <p class='control'><a id='submit' class='button is-primary'>Submit</a></p>
-                        <p class='control'><a id='cancel' class='button is-light'>Cancel</a></p>
+                        <p class='control'><a id='submit' class='button is-primary'>${this.config && config.submitText ? config.submitText : 'Submit'}</a></p>
+                        <p class='control'><a id='cancel' class='button is-light'>${this.config && config.cancelText ? config.cancelText : 'Cancel'}</a></p>
                     </span>
                 </form>`;
     }
@@ -107,6 +107,8 @@ class Form extends Component {
 
 interface FormConfig extends ComponentConfig {
     inline: boolean;
+    submitText?: string;
+    cancelText?: string;
 }
 
 class Textinput extends Input {

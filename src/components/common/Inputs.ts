@@ -125,7 +125,7 @@ class Textinput extends Input {
     }
 
     template() {
-        let config = this.config as InputConfig
+        let config = this.config as TextinputConfig
         return `<label>${config.label ? config.label : name}
                     <input class='input' type='${config.type ? config.type : 'text'}' 
                         placeholder='${config.placeholder ? config.placeholder : 'input'}' ${this.templateProps()}>
@@ -194,7 +194,6 @@ class Checkbox extends Input {
 
     constructor(ele: Element, name: string, config?: InputConfig) {
         super(ele, name, config);
-        if (config.label) this.label = config.label;
     }
 
     async init() {

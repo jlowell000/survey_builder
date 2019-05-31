@@ -1,7 +1,9 @@
 import Component from './components/common/Component';
-import CreateInput from './components/CreateInput';
+import QuestionForm from './components/QuestionCreation';
 
 class Main extends Component {
+
+    private questionForm: QuestionForm;
 
     static load() {
         let main = new Main(document.body);
@@ -10,12 +12,22 @@ class Main extends Component {
 
     async init() {
         this.ele.innerHTML = this.template();
-        this.childComponents.push(new CreateInput(this.ele.querySelector('#form')));
+        
+        this.questionForm = new QuestionForm(this.ele.querySelector('#question_form'));
+        this.questionForm.onSubmit = this.newQuestion.bind(this);
+        this.childComponents.push(this.questionForm);
+
+        
         return super.init();
     }
 
+    newQuestion(){
+        console.log(this.questionForm.getData());
+        //TODO: create input factory from QuestionData
+    }
+
     template() {
-        return `<div id='form'></div>`;
+        return `<div id='question_form'></div>`;
     }
 }
 

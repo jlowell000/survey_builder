@@ -20,6 +20,17 @@ export default class Component {
     initChildern() {
         return Promise.all(this.childComponents.map(c => { return c.init(); }));
     }
+
+    protected getAttributeString() {
+        
+        if (this.config && this.config.attributes) {
+            return Array.from(this.config.attributes.entries()).map(e => {
+                return `${e[0]}${e[1] ? `='${e[1]}'` : ''}`
+            }).join(' ');
+        }
+        return null;
+    }
+
     template() {
         return ``;
     }

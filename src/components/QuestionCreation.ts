@@ -1,7 +1,7 @@
 import Component from './common/Component';
 import { Form, Option, Dropdown, Textinput, Textarea, InputConfig, FormConfig, TextareaConfig } from './common/Inputs';
 
-export default class CreateInput extends Component {
+export default class QuestionForm extends Component {
 
     private form: Form;
     private typeOptions: Option<string, string>[] = [
@@ -53,7 +53,21 @@ export default class CreateInput extends Component {
         }
     }
     onSubmit() {
-        console.log(this.form.getData())
+        console.log(this.getData())
+    }
+
+    getData() {
+        let inputData = this.form.getData() as QuestionData;
+        //TODO: validate QuestionData
+        if (this.optionsInput) {
+            inputData.options = this.optionsInput.getData();
+            if (inputData.options.length === 0) {
+                let msg = 'Zero options; Add some';
+                alert(msg);
+                throw msg;
+            }
+        }
+        return inputData;
     }
 
     template() {
@@ -83,11 +97,17 @@ class OptionsInput extends Component {
 
         let value = new Textinput(null, 'value', {
             label: 'Value:',
-            placeholder: 'value'
+            placeholder: 'value',
+            attributes: new Map<string, string>([
+                ['required', null]
+            ])
         }),
             text = new Textinput(null, 'text', {
                 label: 'Display Text:',
-                placeholder: 'text'
+                placeholder: 'text',
+                attributes: new Map<string, string>([
+                    ['required', null]
+                ])
             });
 
         this.form = new Form(this.ele.querySelector('#option_form'),
@@ -111,17 +131,21 @@ class OptionsInput extends Component {
     }
 
     onAdd() {
-        let option = this.form.getData();
-        //TODO: input validation
-        this.options.push(option as Option<string, string>);
-        console.log(this.options);
-        this.init();
+        let option: Option<string, string> = this.form.getData() as Option<string, string>;
+        if (this.form.reportValidity()) {
+            this.options.push(option);
+            this.init();
+        }
     }
 
     onRemove(e: Event) {
         let i = (e.target as Element).id.split('_')[1];
         this.options.splice(parseInt(i), 1);
         this.init();
+    }
+
+    getData() {
+        return this.options;
     }
 
     listTemplate() {
@@ -145,4 +169,11 @@ class OptionsInput extends Component {
                     <div id='option_list' class='column'>${this.listTemplate()}</div>
                 </div>`;
     }
+}
+
+interface QuestionData {
+    name: string;
+    type: string;
+    question: string;
+    options?: Array<Option<string, string>>
 }

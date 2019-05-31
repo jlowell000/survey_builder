@@ -24,15 +24,6 @@ abstract class Input extends Component {
     setOnChangeCallBack(callback: (value: string | number | boolean) => any) {
         this.onChangeCallback = callback;
     }
-    templateProps() {
-        let p: string[] = new Array<string>();
-
-        p.push(' ');
-        if (this.state.readonly) p.push('readonly');
-        if (this.state.disabled) p.push('disabled');
-
-        return p.join(' ');
-    }
 }
 
 interface InputConfig extends ComponentConfig {
@@ -92,6 +83,11 @@ class Form extends Component {
         return this.childComponents.map(template).join('');
     }
 
+    reportValidity(){
+        let form = this.ele.querySelector('form') as HTMLFormElement;
+        return form.reportValidity();
+    }
+
     template() {
         let config = this.config as FormConfig;
         return `<form>
@@ -128,7 +124,7 @@ class Textinput extends Input {
         let config = this.config as TextinputConfig
         return `<label>${config.label ? config.label : name}
                     <input class='input' type='${config.type ? config.type : 'text'}' 
-                        placeholder='${config.placeholder ? config.placeholder : 'input'}' ${this.templateProps()}>
+                        placeholder='${config.placeholder ? config.placeholder : 'input'}' ${this.getAttributeString()}>
                 </label>`;
     }
 }
@@ -151,7 +147,7 @@ class Textarea extends Input {
         let config = this.config as TextareaConfig;
         return `<label>${config.label ? config.label : this.name}
                     <textarea class='textarea' placeholder='${config.placeholder ? config.placeholder : 'Input'}'
-                    ${config.rows ? ` rows='${config.rows}'` : ''} ${this.templateProps()}></textarea>
+                    ${config.rows ? ` rows='${config.rows}'` : ''} ${this.getAttributeString()}></textarea>
                 </label>`;
     }
 }
@@ -185,7 +181,7 @@ class Dropdown<T extends number | string, U extends number | string> extends Inp
     template() {
         let config = this.config as InputConfig
         return `<label>${config.label ? config.label : this.name}
-                    <span class='select'><select ${this.templateProps()}>${this.optionsTemplate()}</select></span>
+                    <span class='select'><select ${this.getAttributeString()}>${this.optionsTemplate()}</select></span>
                 </label>`;
     }
 }
@@ -208,7 +204,7 @@ class Checkbox extends Input {
 
     template() {
         let config = this.config as InputConfig;
-        return `<label class='checkbox'>${config.label ? config.label : this.name}<input type='checkbox' ${this.templateProps()}></label>`
+        return `<label class='checkbox'>${config.label ? config.label : this.name}<input type='checkbox' ${this.getAttributeString()}></label>`
     }
 }
 
